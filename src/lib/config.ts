@@ -1,13 +1,13 @@
 export const NICHES = [
   { label: "All", value: "all" },
-  { label: "Beauty", value: "beauty" },
-  { label: "Fashion", value: "fashion" },
-  { label: "Fitness", value: "fitness" },
-  { label: "Jewelry", value: "jewelry" },
-  { label: "Pets", value: "pets" },
-  { label: "Home", value: "home" },
-  { label: "Electronics", value: "electronics" },
-  { label: "Sports", value: "sports" },
+  { label: "Beauty", value: "Beauty" },
+  { label: "Fashion", value: "Fashion" },
+  { label: "Fitness", value: "Fitness" },
+  { label: "Jewelry", value: "Jewelry" },
+  { label: "Pets", value: "Pets" },
+  { label: "Home", value: "Home" },
+  { label: "Electronics", value: "Electronics" },
+  { label: "Sports", value: "Sports" },
 ];
 
 export const COUNTRIES = [
