@@ -1,0 +1,9 @@
+{
+  "name": "@leadflow/tsconfig",
+  "version": "1.0.0",
+  "private": true,
+  "exports": {
+    "./nextjs.json": "./nextjs.json",
+    "./base.json": "./base.json"
+  }
+}

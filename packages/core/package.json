@@ -1,0 +1,24 @@
+{
+  "name": "@leadflow/core",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./supabase": "./src/supabase.ts",
+    "./api/axios": "./src/api/axios.ts",
+    "./api/query-client": "./src/api/query-client.ts",
+    "./api/query-keys": "./src/api/query-keys.ts",
+    "./api/api": "./src/api/api.ts"
+  },
+  "dependencies": {
+    "@supabase/ssr": "^0.10.2",
+    "@supabase/supabase-js": "^2.103.0",
+    "@tanstack/react-query": "^5.101.0",
+    "axios": "^1.17.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "typescript": "^5"
+  }
+}
