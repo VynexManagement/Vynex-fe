@@ -18,6 +18,7 @@
     "react-dom": "^19"
   },
   "devDependencies": {
+    "@leadflow/tsconfig": "workspace:*",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "typescript": "^5"

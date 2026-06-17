@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
-import { Roboto } from "next/font/google";
-import { Navbar, Footer } from "@leadflow/ui";
+import { Plus_Jakarta_Sans } from "next/font/google";
+import { Navbar } from "@leadflow/ui";
+import { Footer } from "../features/landing/_components/Footer";
 import "./globals.css";
 
-const roboto = Roboto({
+const sans = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  weight: ["300", "400", "500", "700"],
-  variable: "--font-roboto",
+  weight: ["300", "400", "500", "600", "700", "800"],
   display: "swap",
 });
 
@@ -24,8 +24,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="scroll-smooth">
-      <body className={`${roboto.variable} font-sans bg-white antialiased`}>
-        <Navbar isMarketing={true} loginUrl="http://localhost:3001/login" signupUrl="http://localhost:3001/signup" homeUrl="#" />
+      <body className={`${sans.className} bg-white antialiased`}>
+        <Navbar isMarketing={true} loginUrl="http://localhost:3001/login" signupUrl="http://localhost:3001/signup" homeUrl="/" />
         <main>{children}</main>
         <Footer />
       </body>

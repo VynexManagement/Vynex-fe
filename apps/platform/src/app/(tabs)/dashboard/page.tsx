@@ -1,412 +1,272 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Download, Database, Plus, Loader2, Tag, Globe, Zap, User, History, Trash2, ArrowRight } from "lucide-react";
+import React, { useState } from "react";
+import { 
+  Users, 
+  Layers, 
+  Radio, 
+  Globe, 
+  ChevronDown,
+  Sparkles,
+  ArrowRight,
+  TrendingUp,
+  Activity
+} from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import AuthGuard from "@/components/AuthGuard";
 import { usePulse } from "@/features/dashboard/hooks/usePulse";
-import { useProfile } from "@/features/dashboard/hooks/useProfile";
-import { usePurchases } from "@/features/dashboard/hooks/usePurchases";
-import { useDownloadLeads } from "@/features/dashboard/hooks/useDownloadLeads";
-import { SavedQuery } from "@/features/dashboard/types/dashboard.types";
+import { 
+  BarChart, 
+  Bar, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  ResponsiveContainer 
+} from "recharts";
 
 function DashboardContent() {
-  const router = useRouter();
-  const [activeTab, setActiveTab] = useState<"datasets" | "profile">("datasets");
-
-  // Platform Pulse State (Supabase Client Direct via Hook)
   const { pulse, loading: pulseLoading } = usePulse();
+  const [viewType, setViewType] = useState<"chart" | "table">("chart");
 
-  // Saved Queries State
-  const [savedQueries, setSavedQueries] = useState<SavedQuery[]>([]);
+  // Mock data for Recharts matching category metrics
+  const chartData = [
+    { name: "Beauty", leads: 1250 },
+    { name: "Fashion", leads: 980 },
+    { name: "Health", leads: 640 },
+    { name: "Tech", leads: 1120 },
+    { name: "Other", leads: 480 }
+  ];
 
-  // Purchases State (Axios + TanStack Query)
-  const { data: purchases = [], isLoading: loadingPurchases, error: purchasesError } = usePurchases();
-  const downloadLeadsMutation = useDownloadLeads();
-
-  // Profile State (Supabase Client Direct via Hook)
-  const {
-    profile,
-    setProfile,
-    loading: loadingProfile,
-    saving: savingProfile,
-    error: profileError,
-    success: profileSuccess,
-    saveProfile,
-  } = useProfile();
-
-  const loadSavedQueries = () => {
-    try {
-      const raw = localStorage.getItem("savedLeadQueries");
-      if (raw) {
-        setSavedQueries(JSON.parse(raw));
-      }
-    } catch (err) {
-      console.error("Failed loading saved queries", err);
+  // Mock signals representing live activity
+  const recentSignals = [
+    {
+      store: "Velvet & Vine",
+      action: "was detected installing Klaviyo",
+      time: "2 hours ago",
+      color: "bg-[#6366f1]"
+    },
+    {
+      store: "Ocean Gear",
+      action: "removed Omnisend after 4 months",
+      time: "4 hours ago",
+      color: "bg-[#ef4444]"
+    },
+    {
+      store: "Nordic Tech",
+      action: "saw a 42% traffic spike MoM",
+      time: "5 hours ago",
+      color: "bg-[#10b981]"
+    },
+    {
+      store: "Lumina Skincare",
+      action: "published a new Shopify Plus theme",
+      time: "1 day ago",
+      color: "bg-[#a855f7]"
     }
-  };
+  ];
 
-  useEffect(() => {
-    // Load Saved Queries from LocalStorage
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    loadSavedQueries();
-  }, []);
+  const totalLeads = pulseLoading ? 24500 : (pulse?.totalLeads || 24500);
+  const totalNiches = pulseLoading ? 42 : (pulse?.activeNiches || 42);
 
-  const handleDeleteQuery = (id: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    e.preventDefault();
-    try {
-      const updated = savedQueries.filter((q) => q.id !== id);
-      setSavedQueries(updated);
-      localStorage.setItem("savedLeadQueries", JSON.stringify(updated));
-    } catch (err) {
-      console.error(err);
+  const stats = [
+    {
+      label: "TOTAL LEADS",
+      value: totalLeads.toLocaleString(),
+      Icon: Users,
+      color: "bg-indigo-50 border-indigo-100/50 text-[#6366f1]"
+    },
+    {
+      label: "NICHES",
+      value: totalNiches.toString(),
+      Icon: Layers,
+      color: "bg-orange-50 border-orange-100/50 text-orange-500"
+    },
+    {
+      label: "SIGNALS",
+      value: "156",
+      Icon: Radio,
+      color: "bg-blue-50 border-blue-100/50 text-blue-500"
+    },
+    {
+      label: "COUNTRIES",
+      value: "89",
+      Icon: Globe,
+      color: "bg-indigo-50 border-indigo-100/50 text-indigo-500"
     }
-  };
-
-  const handleLoadQuery = (q: SavedQuery) => {
-    const nParams = q.niches.length ? `&niches=${q.niches.join(",")}` : "";
-    const cParams = q.countries.length ? `&countries=${q.countries.join(",")}` : "";
-    const sParams = q.signalIds.length ? `&signal_ids=${q.signalIds.join(",")}` : "";
-    const snParams = q.signalNames.length ? `&signal_names=${q.signalNames.join(",")}` : "";
-
-    router.push(`/query?load=1${nParams}${cParams}${sParams}${snParams}`);
-  };
-
-  const handleSaveProfile = async (e: React.FormEvent) => {
-    e.preventDefault();
-    saveProfile(profile);
-  };
-
-  const handleDownload = async (datasetId: string, niche: string) => {
-    try {
-      await downloadLeadsMutation.mutateAsync({ datasetId, niche });
-    } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : "Download failed.");
-    }
-  };
-
-  const SIGNAL_COLORS: Record<string, string> = {
-    no_email_detected: "text-[#ffd6ba] bg-[#ffd6ba]/10 border-[#ffd6ba]/20",
-    no_reviews_detected: "text-[#ffdcdc] bg-[#ffdcdc]/10 border-[#ffdcdc]/20",
-    no_social_links: "text-[#00adb5] bg-[#00adb5]/10 border-[#00adb5]/20",
-  };
+  ];
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] max-w-6xl mx-auto px-4 sm:px-6 py-12 space-y-12">
-      {/* ── HEADER & QUICK CTAs ────────────────────────────────────────────── */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 pb-6 border-b border-white/05">
+    <div className="min-h-screen px-6 py-10 max-w-6xl mx-auto space-y-8 select-none">
+      
+      {/* Top Header Row */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div>
-          <span className="text-[10px] uppercase tracking-[0.25em] text-[#00adb5] font-semibold block mb-1.5">CLIENT CONSOLE</span>
-          <h1 className="text-4xl font-extrabold text-[#fafafa] tracking-tight">Dashboard</h1>
-          <p className="text-[#eeeeee]/45 mt-1 text-sm">Monitor platform metrics, saved searches, and downloads.</p>
+          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
+            Intelligence Overview
+          </h1>
+          <p className="text-slate-500 text-sm mt-1">
+            Stats of your lead generation engine, niche and signal distributions.
+          </p>
         </div>
         <Link
           href="/query"
-          id="dashboard-new-query"
-          className="btn-primary group px-6 py-3.5 text-sm font-bold flex items-center gap-2"
+          className="bg-[#6366f1] text-white text-sm font-semibold px-5 py-3 rounded-xl hover:bg-[#4f46e5] shadow-md hover:shadow-indigo-500/15 transition-all flex items-center gap-2 group active:scale-[0.98]"
         >
-          <Plus size={16} /> New Query
-          <span className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center transition-transform group-hover:translate-x-1 group-active:scale-95 shrink-0">
-            <ArrowRight size={12} />
-          </span>
+          <Sparkles size={15} />
+          <span>New Query</span>
+          <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
         </Link>
       </div>
 
-      {/* ── BENTO GRID: PLATFORM PULSE & SEARCH HISTORY ─────────────────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        {/* Platform Pulse Card (col-span-2) */}
-        <div className="lg:col-span-2 double-bezel-outer">
-          <div className="double-bezel-inner p-6 space-y-6 h-full flex flex-col justify-between">
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <Zap size={16} className="text-[#00adb5]" />
-                <h3 className="text-sm font-semibold uppercase tracking-wider text-[#eeeeee]/60">Platform Pulse</h3>
-              </div>
-              <h2 className="text-2xl font-bold text-[#eeeeee] tracking-tight">Live Platform Data</h2>
-              <p className="text-xs text-[#eeeeee]/45 mt-1.5 leading-relaxed">
-                Direct metrics fetched from our active scraping networks and lead catalogs.
-              </p>
+      {/* Metrics Row */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 w-full">
+        {stats.map(({ label, value, Icon, color }, idx) => (
+          <div
+            key={idx}
+            className="bg-white border border-slate-100 p-6 rounded-2xl shadow-[0_12px_30px_-15px_rgba(0,0,0,0.02)] flex flex-col justify-between hover:border-slate-200 transition-all duration-300"
+          >
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center border ${color} mb-5`}>
+              <Icon className="w-5 h-5" strokeWidth={2.25} />
             </div>
+            <div className="space-y-1">
+              <span className="text-[10px] font-bold text-slate-400 tracking-wider">
+                {label}
+              </span>
+              <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">
+                {value}
+              </h2>
+            </div>
+          </div>
+        ))}
+      </div>
 
-            {pulseLoading ? (
-              <div className="flex items-center justify-center py-6 text-xs text-[#eeeeee]/30">
-                <Loader2 className="animate-spin w-4 h-4 mr-2 text-[#00adb5]" /> Syncing metrics...
-              </div>
-            ) : (
-              <div className="grid grid-cols-3 gap-4 pt-4 border-t border-white/05">
-                <div className="text-center">
-                  <div className="text-xl font-extrabold text-[#00adb5] tracking-tight">
-                    {pulse.totalStores.toLocaleString()}
-                  </div>
-                  <div className="text-[10px] text-[#eeeeee]/40 mt-1 uppercase tracking-wider">Stores</div>
-                </div>
-                <div className="text-center border-x border-white/05">
-                  <div className="text-xl font-extrabold text-[#eeeeee] tracking-tight">
-                    {pulse.totalLeads.toLocaleString()}
-                  </div>
-                  <div className="text-[10px] text-[#eeeeee]/40 mt-1 uppercase tracking-wider">Leads</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-xl font-extrabold text-[#ffd6ba] tracking-tight">
-                    {pulse.activeNiches}
-                  </div>
-                  <div className="text-[10px] text-[#eeeeee]/40 mt-1 uppercase tracking-wider">Niches</div>
-                </div>
-              </div>
-            )}
+      {/* Leads by Niche Card */}
+      <div className="bg-white border border-slate-100 rounded-2xl shadow-[0_15px_40px_-15px_rgba(0,0,0,0.02)] p-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-50 pb-5">
+          <div>
+            <h3 className="text-base font-bold text-slate-900">Leads by Niche</h3>
+            <p className="text-slate-400 text-xs mt-0.5">Lead distribution across top market segments</p>
+          </div>
+          
+          <div className="flex items-center gap-3 flex-wrap">
+            <button className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-slate-50 text-slate-600 text-xs font-semibold transition-colors cursor-pointer">
+              <span>All Signals</span>
+              <ChevronDown size={12} className="text-slate-400" />
+            </button>
+            <button className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-slate-50 text-slate-600 text-xs font-semibold transition-colors cursor-pointer">
+              <span>All Countries</span>
+              <ChevronDown size={12} className="text-slate-400" />
+            </button>
+            
+            {/* View Toggle */}
+            <div className="flex bg-slate-100 p-0.5 rounded-xl border border-slate-200/40">
+              <button
+                onClick={() => setViewType("chart")}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  viewType === "chart"
+                    ? "bg-white text-indigo-600 shadow-sm"
+                    : "text-slate-500 hover:text-slate-800"
+                }`}
+              >
+                Chart
+              </button>
+              <button
+                onClick={() => setViewType("table")}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  viewType === "table"
+                    ? "bg-white text-indigo-600 shadow-sm"
+                    : "text-slate-500 hover:text-slate-800"
+                }`}
+              >
+                Table
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Saved Searches / History Card (col-span-3) */}
-        <div className="lg:col-span-3 double-bezel-outer">
-          <div className="double-bezel-inner p-6 space-y-4 h-full flex flex-col justify-between">
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <History size={16} className="text-[#ffd6ba]" />
-                <h3 className="text-sm font-semibold uppercase tracking-wider text-[#eeeeee]/60">Saved Searches</h3>
-              </div>
-              <h2 className="text-2xl font-bold text-[#eeeeee] tracking-tight">Query Templates</h2>
-              <p className="text-xs text-[#eeeeee]/45 mt-1">
-                Quickly reload your custom search filters to check for newly scraped leads.
-              </p>
-            </div>
-
-            <div className="max-h-[120px] overflow-y-auto space-y-2 pr-1 pt-2 border-t border-white/05">
-              {savedQueries.length === 0 ? (
-                <div className="text-xs text-[#eeeeee]/30 italic py-4">
-                  No saved searches yet. Check &quot;Save this query&quot; when searching to add templates!
-                </div>
-              ) : (
-                savedQueries.map((q) => (
-                  <div
-                    key={q.id}
-                    onClick={() => handleLoadQuery(q)}
-                    className="flex justify-between items-center bg-white/[0.02] hover:bg-[#00adb5]/06 border border-white/05 hover:border-[#00adb5]/25 rounded-xl px-4 py-2.5 cursor-pointer transition-all group"
-                  >
-                    <div className="space-y-1">
-                      <div className="text-xs font-bold text-[#eeeeee] group-hover:text-[#00adb5] transition-colors">
-                        {q.name}
-                      </div>
-                      <div className="text-[10px] text-[#eeeeee]/45 flex flex-wrap gap-x-2">
-                        {q.niches.length > 0 && <span>Niches: {q.niches.join(", ")}</span>}
-                        {q.countries.length > 0 && <span>Countries: {q.countries.join(", ")}</span>}
-                      </div>
-                    </div>
-                    <button
-                      onClick={(e) => handleDeleteQuery(q.id, e)}
-                      className="p-1.5 rounded-lg text-[#eeeeee]/30 hover:text-red-400 hover:bg-red-500/10 transition-colors"
-                      title="Delete Template"
-                    >
-                      <Trash2 size={13} />
-                    </button>
-                  </div>
-                ))
-              )}
-            </div>
+        {/* View Content */}
+        {viewType === "chart" ? (
+          <div className="h-72 w-full mt-6">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f8fafc" />
+                <XAxis 
+                  dataKey="name" 
+                  tickLine={false} 
+                  axisLine={false} 
+                  stroke="#94a3b8" 
+                  fontSize={11} 
+                  fontWeight={600} 
+                />
+                <YAxis 
+                  tickLine={false} 
+                  axisLine={false} 
+                  stroke="#94a3b8" 
+                  fontSize={11} 
+                  fontWeight={600} 
+                />
+                <Tooltip cursor={{ fill: "#f8fafc" }} />
+                <Bar 
+                  dataKey="leads" 
+                  fill="#6366f1" 
+                  radius={[4, 4, 0, 0]} 
+                  barSize={32} 
+                />
+              </BarChart>
+            </ResponsiveContainer>
           </div>
+        ) : (
+          <div className="w-full mt-6 overflow-x-auto">
+            <table className="w-full text-left text-sm border-collapse">
+              <thead>
+                <tr className="border-b border-slate-50 text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50/20">
+                  <th className="px-6 py-4">Niche Name</th>
+                  <th className="px-6 py-4 text-right">Leads Count</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-50 text-slate-700 font-semibold">
+                {chartData.map((d, i) => (
+                  <tr key={i} className="hover:bg-slate-50/20 transition-colors">
+                    <td className="px-6 py-4 text-slate-900">{d.name}</td>
+                    <td className="px-6 py-4 text-right text-indigo-600">{d.leads.toLocaleString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* Recent Lead Signals Section */}
+      <div className="bg-white border border-slate-100 rounded-2xl shadow-[0_15px_40px_-15px_rgba(0,0,0,0.02)] p-6">
+        <div className="flex justify-between items-center border-b border-slate-50 pb-5 mb-5">
+          <div className="flex items-center gap-2">
+            <Activity className="text-indigo-600 w-4 h-4" />
+            <h3 className="text-base font-bold text-slate-900">Recent Lead Signals</h3>
+          </div>
+          <a href="/query" className="text-[#6366f1] hover:text-[#4f46e5] text-xs font-bold hover:underline transition-all">
+            View All
+          </a>
         </div>
-      </div>
 
-      {/* ── TABS NAVIGATION ────────────────────────────────────────────────── */}
-      <div className="flex border-b border-[#2f2f2f]">
-        <button
-          onClick={() => setActiveTab("datasets")}
-          className={`pb-3 px-6 font-bold text-sm transition-all border-b-2 ${
-            activeTab === "datasets" ? "border-white text-white" : "border-transparent text-[#a3a3a3] hover:text-white"
-          }`}
-        >
-          My Purchased Lists
-        </button>
-        <button
-          onClick={() => setActiveTab("profile")}
-          className={`pb-3 px-6 font-bold text-sm transition-all border-b-2 ${
-            activeTab === "profile" ? "border-white text-white" : "border-transparent text-[#a3a3a3] hover:text-white"
-          }`}
-        >
-          Account Settings
-        </button>
-      </div>
-
-      {/* ── TAB CONTENT ────────────────────────────────────────────────────── */}
-      {activeTab === "datasets" && (
-        <div className="space-y-6">
-          {loadingPurchases ? (
-            <div className="flex items-center justify-center py-20 text-[#a3a3a3]">
-              <Loader2 className="animate-spin w-6 h-6 mr-2 text-white" /> Loading purchased files...
-            </div>
-          ) : purchasesError ? (
-            <div className="glass-card p-8 text-center text-[#ffdcdc] border-red-500/20 bg-red-950/10">
-              {purchasesError instanceof Error ? purchasesError.message : "Failed to load purchases"}
-            </div>
-          ) : purchases.length === 0 ? (
-            <div className="glass-card p-16 text-center space-y-6 max-w-xl mx-auto border-white/05 bg-white/[0.01]">
-              <div className="w-16 h-16 rounded-2xl bg-white/[0.02] border border-white/08 flex items-center justify-center mx-auto">
-                <Database className="w-7 h-7 text-[#eeeeee]/30" />
-              </div>
-              <div className="space-y-2">
-                <h2 className="text-xl font-bold text-[#eeeeee]">No unlocked lists yet</h2>
-                <p className="text-[#eeeeee]/40 text-xs max-w-xs mx-auto leading-relaxed">
-                  Search leads, preview available stores, and purchase to unlock instant CSV downloads.
+        <div className="divide-y divide-slate-50">
+          {recentSignals.map((sig, i) => (
+            <div key={i} className="flex justify-between items-center py-4 first:pt-0 last:pb-0 hover:bg-slate-50/10 transition-colors">
+              <div className="flex items-center gap-3">
+                <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${sig.color}`} />
+                <p className="text-sm font-semibold text-slate-600">
+                  <strong className="text-slate-900 font-bold">{sig.store}</strong> {sig.action}
                 </p>
               </div>
-              <Link href="/query" className="btn-primary inline-block px-6 py-3 font-bold text-sm">
-                Search Leads
-              </Link>
+              <span className="text-xs text-slate-400 font-medium shrink-0 ml-4">
+                {sig.time}
+              </span>
             </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {purchases.map((p) => {
-                const isDownloadingThis = downloadLeadsMutation.isPending && downloadLeadsMutation.variables?.datasetId === p.dataset_id;
-                return (
-                  <div key={p.id} className="double-bezel-outer transition-premium hover:-translate-y-0.5">
-                    <div className="double-bezel-inner p-5 space-y-4 h-full flex flex-col justify-between">
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between gap-4">
-                          <div className="flex items-center gap-2">
-                            <Database className="text-[#00adb5] w-4 h-4 shrink-0" />
-                            <span className="font-extrabold text-[#eeeeee] text-base tracking-tight">
-                              {p.niche} Leads
-                            </span>
-                          </div>
-                          <span className="text-[10px] font-mono text-[#eeeeee]/30 uppercase">ID: {p.dataset_id.slice(0, 8)}</span>
-                        </div>
-
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className="flex items-center gap-1 bg-[#fff2eb]/08 border border-[#fff2eb]/14 text-[#fff2eb] px-2.5 py-0.5 rounded-full text-[10px] font-medium">
-                            <Globe size={9} /> {p.country}
-                          </span>
-                          <span
-                            className={`flex items-center gap-1 border px-2.5 py-0.5 rounded-full text-[10px] font-medium ${
-                              SIGNAL_COLORS[p.signal] || "text-[#ffd6ba] bg-[#ffd6ba]/10 border-[#ffd6ba]/20"
-                            }`}
-                          >
-                            <Zap size={9} /> {p.signal.replace(/_/g, " ")}
-                          </span>
-                          <span className="flex items-center gap-1 bg-[#00adb5]/10 border border-[#00adb5]/20 text-[#00adb5] px-2.5 py-0.5 rounded-full text-[10px] font-medium">
-                            <Tag size={9} /> {p.total_leads.toLocaleString()} records
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="pt-4 border-t border-white/05 flex items-center justify-between gap-4">
-                        <div className="text-[10px] text-[#eeeeee]/35">
-                          Unlocked {new Date(p.purchase_date).toLocaleDateString("en-US", {
-                            year: "numeric",
-                            month: "short",
-                            day: "numeric",
-                          })}
-                        </div>
-                        <button
-                          id={`download-${p.dataset_id.slice(0, 8)}`}
-                          onClick={() => handleDownload(p.dataset_id, p.niche)}
-                          disabled={isDownloadingThis}
-                          className="flex items-center gap-2 bg-white/[0.02] hover:bg-[#00adb5]/10 border border-white/08 hover:border-[#00adb5]/40 px-4 py-2 rounded-xl font-bold text-xs text-[#eeeeee]/70 hover:text-[#00adb5] transition-all disabled:opacity-50"
-                        >
-                          {isDownloadingThis ? (
-                            <Loader2 size={13} className="animate-spin" />
-                          ) : (
-                            <Download size={13} />
-                          )}
-                          {isDownloadingThis ? "Syncing..." : "Download CSV"}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
+          ))}
         </div>
-      )}
+      </div>
 
-      {activeTab === "profile" && (
-        <div className="max-w-2xl">
-          {loadingProfile ? (
-            <div className="flex items-center py-20 text-[#eeeeee]/40">
-              <Loader2 className="animate-spin w-6 h-6 mr-2 text-[#00adb5]" /> Loading settings...
-            </div>
-          ) : (
-            <div className="double-bezel-outer">
-              <div className="double-bezel-inner p-8 space-y-6">
-                <div className="flex items-center gap-3 border-b border-white/05 pb-4">
-                  <User className="text-[#00adb5] w-5 h-5" />
-                  <h2 className="text-xl font-extrabold text-[#eeeeee] tracking-tight">Account Profile</h2>
-                </div>
-
-                <form onSubmit={handleSaveProfile} className="space-y-5">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-[#eeeeee]/55">Full Name</label>
-                      <input
-                        type="text"
-                        required
-                        value={profile.name}
-                        onChange={(e) => setProfile(prev => ({ ...prev, name: e.target.value }))}
-                        className="w-full bg-[#121212]/50 border border-white/08 focus:border-[#00adb5]/50 rounded-xl px-4 py-3 text-[#eeeeee] text-sm focus:outline-none focus:ring-1 focus:ring-[#00adb5] transition-all"
-                      />
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-[#eeeeee]/55">Organization</label>
-                      <input
-                        type="text"
-                        value={profile.org}
-                        onChange={(e) => setProfile(prev => ({ ...prev, org: e.target.value }))}
-                        className="w-full bg-[#121212]/50 border border-white/08 focus:border-[#00adb5]/50 rounded-xl px-4 py-3 text-[#eeeeee] text-sm focus:outline-none focus:ring-1 focus:ring-[#00adb5] transition-all"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-[#eeeeee]/55">Phone Number</label>
-                      <input
-                        type="tel"
-                        value={profile.phone}
-                        onChange={(e) => setProfile(prev => ({ ...prev, phone: e.target.value }))}
-                        className="w-full bg-[#121212]/50 border border-white/08 focus:border-[#00adb5]/50 rounded-xl px-4 py-3 text-[#eeeeee] text-sm focus:outline-none focus:ring-1 focus:ring-[#00adb5] transition-all"
-                      />
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-[#eeeeee]/55">Usage Purpose</label>
-                      <select
-                        required
-                        value={profile.purpose}
-                        onChange={(e) => setProfile(prev => ({ ...prev, purpose: e.target.value }))}
-                        className="w-full bg-[#121212]/50 border border-white/08 focus:border-[#00adb5]/50 rounded-xl px-4 py-3 text-[#eeeeee] text-sm focus:outline-none focus:ring-1 focus:ring-[#00adb5] transition-all appearance-none"
-                      >
-                        <option value="" disabled>Select your usage...</option>
-                        <option value="Marketing Agency">Marketing Agency</option>
-                        <option value="D2C Brand">D2C Brand</option>
-                        <option value="E-commerce Founder">E-commerce Founder</option>
-                        <option value="Sales/Lead Gen">Sales/Lead Gen</option>
-                        <option value="Other">Other</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="pt-4 border-t border-white/05 flex items-center justify-between">
-                    <div>
-                      {profileSuccess && <span className="text-xs font-semibold text-[#00adb5]">Settings saved successfully!</span>}
-                      {profileError && <span className="text-xs font-semibold text-red-400">{profileError}</span>}
-                    </div>
-                    <button
-                      type="submit"
-                      disabled={savingProfile}
-                      className="btn-primary py-2.5 px-6 font-bold text-xs flex items-center gap-2"
-                    >
-                      {savingProfile ? <Loader2 className="animate-spin w-4 h-4" /> : "Save Changes"}
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
     </div>
   );
 }

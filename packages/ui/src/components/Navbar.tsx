@@ -3,6 +3,7 @@
 import * as React from "react";
 import { Zap, Menu, X, LogOut, LayoutDashboard, Search } from "lucide-react";
 import { cn } from "./utils";
+import { Container } from "./Container";
 
 export interface NavbarProps {
   isMarketing?: boolean;
@@ -32,7 +33,7 @@ export function Navbar({
 
   return (
     <nav className="sticky top-0 z-50 bg-white/70 backdrop-blur-md border-b border-slate-100/80 transition-premium">
-      <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+       <Container className="h-16 flex items-center justify-between">
         {/* Logo */}
         <a href={homeUrl} className="flex items-center gap-2 text-slate-900 font-bold text-xl select-none">
           <span className="font-extrabold text-2xl tracking-tight bg-slate-900 text-transparent bg-clip-text">
@@ -45,19 +46,19 @@ export function Navbar({
           {isMarketing ? (
             <>
               <a
-                href="#features"
+                href="/features"
                 className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors"
               >
                 Features
               </a>
               <a
-                href="#pricing"
+                href="/pricing"
                 className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors"
               >
                 Pricing
               </a>
               <a
-                href="#contact"
+                href="/contact"
                 className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors"
               >
                 Contact Us
@@ -147,7 +148,9 @@ export function Navbar({
         >
           {menuOpen ? <X size={22} /> : <Menu size={22} />}
         </button>
-      </div>
+      
+      
+      </Container>
 
       {/* Mobile Menu */}
       {menuOpen && (
@@ -155,21 +158,21 @@ export function Navbar({
           {isMarketing ? (
             <div className="flex flex-col gap-3.5">
               <a
-                href="#features"
+                href="/features"
                 className="text-sm font-medium text-slate-600 hover:text-slate-900"
                 onClick={() => setMenuOpen(false)}
               >
                 Features
               </a>
               <a
-                href="#pricing"
+                href="/pricing"
                 className="text-sm font-medium text-slate-600 hover:text-slate-900"
                 onClick={() => setMenuOpen(false)}
               >
                 Pricing
               </a>
               <a
-                href="#contact"
+                href="/contact"
                 className="text-sm font-medium text-slate-600 hover:text-slate-900"
                 onClick={() => setMenuOpen(false)}
               >

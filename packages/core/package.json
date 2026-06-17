@@ -17,6 +17,7 @@
     "axios": "^1.17.0"
   },
   "devDependencies": {
+    "@leadflow/tsconfig": "workspace:*",
     "@types/node": "^20",
     "@types/react": "^19",
     "typescript": "^5"
