@@ -7,9 +7,9 @@ interface MetricCardProps {
 
 export default function MetricCard({ label, value }: MetricCardProps) {
   return (
-    <div className="rounded-2xl border border-[#00adb5]/10 bg-[#393e46]/40 p-5">
-      <div className="text-3xl font-bold text-[#eeeeee]">{value}</div>
-      <div className="mt-1 text-sm text-[#eeeeee]/60">{label}</div>
+    <div className="border border-slate-100 bg-white rounded-2xl p-6 shadow-sm flex flex-col justify-between">
+      <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{label}</div>
+      <div className="text-3xl font-extrabold text-slate-900 mt-2 tracking-tight">{value}</div>
     </div>
   );
 }

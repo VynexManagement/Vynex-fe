@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
-import { Roboto } from "next/font/google";
+import { Plus_Jakarta_Sans } from "next/font/google";
 import QueryProvider from "@/components/QueryProvider";
 import "./globals.css";
 
-const roboto = Roboto({
+const sans = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  weight: ["300", "400", "500", "700"],
-  variable: "--font-roboto",
+  weight: ["300", "400", "500", "600", "700", "800"],
   display: "swap",
 });
 
@@ -22,7 +21,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${roboto.variable} font-sans antialiased bg-[#191919]`}>
+      <body className={`${sans.className} bg-[#f8fafc] text-slate-800 antialiased`}>
         <QueryProvider>
           {children}
         </QueryProvider>
