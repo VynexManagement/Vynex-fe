@@ -271,6 +271,32 @@ function QueryContent() {
                       onChange={(e) => setNicheSearch(e.target.value)}
                       className="w-full px-3 py-1.5 border border-slate-100 rounded-lg text-xs placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500"
                     />
+                    {filteredNiches.length > 0 && (
+                      <label className="flex items-center gap-2.5 px-2.5 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 rounded-lg cursor-pointer transition-colors border-b border-slate-100/60 pb-2 shrink-0 select-none">
+                        <input
+                          type="checkbox"
+                          checked={filteredNiches.every((n: string) => selectedNiches.includes(n))}
+                          onChange={() => {
+                            const allSelected = filteredNiches.every((n: string) => selectedNiches.includes(n));
+                            if (allSelected) {
+                              setSelectedNiches(prev => prev.filter(x => !filteredNiches.includes(x)));
+                            } else {
+                              setSelectedNiches(prev => {
+                                const newSelection = [...prev];
+                                filteredNiches.forEach((n: string) => {
+                                  if (!newSelection.includes(n)) {
+                                    newSelection.push(n);
+                                  }
+                                });
+                                return newSelection;
+                              });
+                            }
+                          }}
+                          className="w-3.5 h-3.5 rounded border-slate-200 text-indigo-600 focus:ring-indigo-500/20 cursor-pointer"
+                        />
+                        <span>Select All</span>
+                      </label>
+                    )}
                     <div className="flex-1 overflow-y-auto space-y-1 min-h-0 pr-1">
                       {filteredNiches.length === 0 ? (
                         <div className="text-center text-[11px] text-slate-400 py-3">No niches found</div>
@@ -350,6 +376,32 @@ function QueryContent() {
                       onChange={(e) => setCountrySearch(e.target.value)}
                       className="w-full px-3 py-1.5 border border-slate-100 rounded-lg text-xs placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500"
                     />
+                    {filteredCountries.length > 0 && (
+                      <label className="flex items-center gap-2.5 px-2.5 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 rounded-lg cursor-pointer transition-colors border-b border-slate-100/60 pb-2 shrink-0 select-none">
+                        <input
+                          type="checkbox"
+                          checked={filteredCountries.every((c: string) => selectedCountries.includes(c))}
+                          onChange={() => {
+                            const allSelected = filteredCountries.every((c: string) => selectedCountries.includes(c));
+                            if (allSelected) {
+                              setSelectedCountries(prev => prev.filter(x => !filteredCountries.includes(x)));
+                            } else {
+                              setSelectedCountries(prev => {
+                                const newSelection = [...prev];
+                                filteredCountries.forEach((c: string) => {
+                                  if (!newSelection.includes(c)) {
+                                    newSelection.push(c);
+                                  }
+                                });
+                                return newSelection;
+                              });
+                            }
+                          }}
+                          className="w-3.5 h-3.5 rounded border-slate-200 text-indigo-600 focus:ring-indigo-500/20 cursor-pointer"
+                        />
+                        <span>Select All</span>
+                      </label>
+                    )}
                     <div className="flex-1 overflow-y-auto space-y-1 min-h-0 pr-1">
                       {filteredCountries.length === 0 ? (
                         <div className="text-center text-[11px] text-slate-400 py-3">No regions found</div>
@@ -429,6 +481,32 @@ function QueryContent() {
                       onChange={(e) => setSignalSearch(e.target.value)}
                       className="w-full px-3 py-1.5 border border-slate-100 rounded-lg text-xs placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500"
                     />
+                    {filteredSignals.length > 0 && (
+                      <label className="flex items-center gap-2.5 px-2.5 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 rounded-lg cursor-pointer transition-colors border-b border-slate-100/60 pb-2 shrink-0 select-none">
+                        <input
+                          type="checkbox"
+                          checked={filteredSignals.every((s: SignalOption) => selectedSignals.includes(s.name))}
+                          onChange={() => {
+                            const allSelected = filteredSignals.every((s: SignalOption) => selectedSignals.includes(s.name));
+                            if (allSelected) {
+                              setSelectedSignals(prev => prev.filter(x => !filteredSignals.map(fs => fs.name).includes(x)));
+                            } else {
+                              setSelectedSignals(prev => {
+                                const newSelection = [...prev];
+                                filteredSignals.forEach((s: SignalOption) => {
+                                  if (!newSelection.includes(s.name)) {
+                                    newSelection.push(s.name);
+                                  }
+                                });
+                                return newSelection;
+                              });
+                            }
+                          }}
+                          className="w-3.5 h-3.5 rounded border-slate-200 text-indigo-600 focus:ring-indigo-500/20 cursor-pointer mt-0.5"
+                        />
+                        <span>Select All</span>
+                      </label>
+                    )}
                     <div className="flex-1 overflow-y-auto space-y-1.5 min-h-0 pr-1">
                       {filteredSignals.length === 0 ? (
                         <div className="text-center text-[11px] text-slate-400 py-3">No signals found</div>
@@ -528,20 +606,95 @@ function QueryContent() {
               <span className="text-slate-800 font-normal">Shopify</span>
               <ChevronDown size={11} className="text-slate-400" />
             </div>
-            <div className="px-4 py-2 border border-slate-100 bg-slate-50/40 rounded-xl text-xs font-normal text-slate-600 flex items-center gap-2">
-              <span className="text-slate-400">Niches:</span>
-              <span className="text-slate-800 font-normal max-w-[200px] truncate">{selectedNiches.join(", ") || "Skincare & Beauty"}</span>
-              <ChevronDown size={11} className="text-slate-400" />
+            
+            {/* Niches Filter */}
+            <div className="relative group">
+              <button
+                type="button"
+                className="px-4 py-2 border border-slate-100 bg-slate-50/40 rounded-xl text-xs font-normal text-slate-600 flex items-center gap-2 cursor-pointer hover:bg-slate-50 transition-all"
+              >
+                <span className="text-slate-400">Niches:</span>
+                <span className="text-slate-800 font-normal">
+                  {selectedNiches.length === 0
+                    ? "Skincare & Beauty"
+                    : selectedNiches.length === 1
+                    ? selectedNiches[0]
+                    : `${selectedNiches.length} Selected`}
+                </span>
+                <ChevronDown size={11} className="text-slate-400 shrink-0" />
+              </button>
+              
+              {selectedNiches.length > 0 && (
+                <div className="absolute left-0 top-full pt-1.5 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 ease-out origin-top scale-95 group-hover:scale-100">
+                  <div className="bg-white border border-slate-200 rounded-xl shadow-lg p-3 flex flex-wrap gap-1.5 min-w-[200px] max-w-[300px]">
+                    {selectedNiches.map((niche) => (
+                      <span key={niche} className="bg-slate-100 border border-slate-200/50 text-slate-600 px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase tracking-wider">
+                        {niche}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
-            <div className="px-4 py-2 border border-slate-100 bg-slate-50/40 rounded-xl text-xs font-normal text-slate-600 flex items-center gap-2">
-              <span className="text-slate-400">Signals:</span>
-              <span className="text-slate-800 font-normal max-w-[200px] truncate">{selectedSignals.join(", ") || "High Traffic Growth"}</span>
-              <ChevronDown size={11} className="text-slate-400" />
+
+            {/* Signals Filter */}
+            <div className="relative group">
+              <button
+                type="button"
+                className="px-4 py-2 border border-slate-100 bg-slate-50/40 rounded-xl text-xs font-normal text-slate-600 flex items-center gap-2 cursor-pointer hover:bg-slate-50 transition-all"
+              >
+                <span className="text-slate-400">Signals:</span>
+                <span className="text-slate-800 font-normal">
+                  {selectedSignals.length === 0
+                    ? "High Traffic Growth"
+                    : selectedSignals.length === 1
+                    ? selectedSignals[0]
+                    : `${selectedSignals.length} Selected`}
+                </span>
+                <ChevronDown size={11} className="text-slate-400 shrink-0" />
+              </button>
+
+              {selectedSignals.length > 0 && (
+                <div className="absolute left-0 top-full pt-1.5 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 ease-out origin-top scale-95 group-hover:scale-100">
+                  <div className="bg-white border border-slate-200 rounded-xl shadow-lg p-3 flex flex-wrap gap-1.5 min-w-[250px] max-w-[400px]">
+                    {selectedSignals.map((signal) => (
+                      <span key={signal} className="bg-slate-100 border border-slate-200/50 text-slate-600 px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase tracking-wider">
+                        {signal}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
-            <div className="px-4 py-2 border border-slate-100 bg-slate-50/40 rounded-xl text-xs font-normal text-slate-600 flex items-center gap-2">
-              <span className="text-slate-400">Locations:</span>
-              <span className="text-slate-800 font-normal max-w-[200px] truncate">{selectedCountries.join(", ") || "United States"}</span>
-              <ChevronDown size={11} className="text-slate-400" />
+
+            {/* Locations Filter */}
+            <div className="relative group">
+              <button
+                type="button"
+                className="px-4 py-2 border border-slate-100 bg-slate-50/40 rounded-xl text-xs font-normal text-slate-600 flex items-center gap-2 cursor-pointer hover:bg-slate-50 transition-all"
+              >
+                <span className="text-slate-400">Locations:</span>
+                <span className="text-slate-800 font-normal">
+                  {selectedCountries.length === 0
+                    ? "United States"
+                    : selectedCountries.length === 1
+                    ? selectedCountries[0]
+                    : `${selectedCountries.length} Selected`}
+                </span>
+                <ChevronDown size={11} className="text-slate-400 shrink-0" />
+              </button>
+
+              {selectedCountries.length > 0 && (
+                <div className="absolute left-0 top-full pt-1.5 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 ease-out origin-top scale-95 group-hover:scale-100">
+                  <div className="bg-white border border-slate-200 rounded-xl shadow-lg p-3 flex flex-wrap gap-1.5 min-w-[200px] max-w-[300px]">
+                    {selectedCountries.map((country) => (
+                      <span key={country} className="bg-slate-100 border border-slate-200/50 text-slate-600 px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase tracking-wider">
+                        {country}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

@@ -36,7 +36,8 @@ function PreviewContent() {
   // State
   const [context, setContext] = useState<any>({});
   const [selectedPlan, setSelectedPlan] = useState<"starter" | "pro">("pro");
-  const [loading, setLoading] = useState(false);
+  const [stripeLoading, setStripeLoading] = useState(false);
+  const [razorpayLoading, setRazorpayLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
 
@@ -75,7 +76,7 @@ function PreviewContent() {
     });
 
   const handleRazorpay = async () => {
-    setLoading(true);
+    setRazorpayLoading(true);
     setError("");
     try {
       const loaded = await loadRazorpay();
@@ -111,30 +112,30 @@ function PreviewContent() {
             setTimeout(() => router.push("/lead-library"), 2000);
           } catch {
             setError("Verification failed. Please check your dashboard or contact support.");
-            setLoading(false);
+            setRazorpayLoading(false);
           }
         },
         prefill: {},
         theme: { color: "#6366f1" },
         modal: {
-          ondismiss: () => setLoading(false),
+          ondismiss: () => setRazorpayLoading(false),
         },
       };
 
       const rzp = new window.Razorpay(options);
       rzp.on("payment.failed", () => {
         setError("Payment failed. Please try again.");
-        setLoading(false);
+        setRazorpayLoading(false);
       });
       rzp.open();
     } catch (err: any) {
       setError(err?.message || "Razorpay connection failed. Check backend.");
-      setLoading(false);
+      setRazorpayLoading(false);
     }
   };
 
   const handleStripe = async () => {
-    setLoading(true);
+    setStripeLoading(true);
     setError("");
     try {
       const priceUSD = selectedPlan === "pro" ? 49 : 35; // $49 for Pro, $35 for Starter
@@ -149,18 +150,16 @@ function PreviewContent() {
       const stripe = await loadStripe(intent.publishable_key);
       if (!stripe) throw new Error("Stripe loading failed.");
 
-      const { error: stripeError, paymentIntent } = await stripe.confirmPayment({
-        clientSecret: intent.client_secret,
-        confirmParams: {
-          return_url: `${window.location.origin}/lead-library`,
-          payment_method_data: { billing_details: {} },
-        },
-        redirect: "if_required",
-      });
+      const { error: stripeError, paymentIntent } = await stripe.confirmCardPayment(
+        intent.client_secret,
+        {
+          payment_method: "pm_card_visa",
+        }
+      );
 
       if (stripeError) {
         setError(stripeError.message || "Stripe transaction failed.");
-        setLoading(false);
+        setStripeLoading(false);
         return;
       }
 
@@ -175,7 +174,7 @@ function PreviewContent() {
       }
     } catch (err: any) {
       setError(err?.message || "Stripe checkout failed. Check server.");
-      setLoading(false);
+      setStripeLoading(false);
     }
   };
 
@@ -371,18 +370,18 @@ function PreviewContent() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-lg mx-auto w-full">
           <button
             onClick={handleStripe}
-            disabled={loading}
+            disabled={stripeLoading || razorpayLoading}
             className="bg-[#6366f1] hover:bg-[#4f46e5] text-white text-xs font-bold py-3.5 rounded-xl transition-all shadow-md shadow-indigo-500/10 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 active:scale-[0.98]"
           >
-            {loading ? <Loader2 size={13} className="animate-spin" /> : <CreditCard size={14} />}
+            {stripeLoading ? <Loader2 size={13} className="animate-spin" /> : <CreditCard size={14} />}
             <span>Pay with Stripe</span>
           </button>
           <button
             onClick={handleRazorpay}
-            disabled={loading}
+            disabled={stripeLoading || razorpayLoading}
             className="bg-indigo-50 border border-indigo-100 text-[#6366f1] hover:bg-indigo-100/50 text-xs font-bold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 active:scale-[0.98]"
           >
-            {loading ? <Loader2 size={13} className="animate-spin" /> : <DollarSign size={14} />}
+            {razorpayLoading ? <Loader2 size={13} className="animate-spin" /> : <DollarSign size={14} />}
             <span>Pay with Razorpay</span>
           </button>
         </div>
