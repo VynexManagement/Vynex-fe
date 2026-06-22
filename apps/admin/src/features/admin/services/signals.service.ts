@@ -5,6 +5,9 @@ export interface SignalRow {
   name: string;
   slug?: string;
   type?: string;
+  category?: string;
+  weight?: number;
+  dependencies?: string[];
   description?: string;
   rule_definition?: string;
   active?: boolean;
@@ -33,5 +36,29 @@ export const updateSignal = async (
   payload: Partial<SignalRow>
 ): Promise<SignalRow> => {
   const res = await apiClient.put<SignalRow>(`/api/admin/signals/${id}`, payload);
+  return res.data;
+};
+
+export const refreshStaleStores = async (payload: {
+  freshness_threshold: number;
+  concurrency: number;
+  retry_attempts: number;
+}): Promise<{ message: string; task_id: string }> => {
+  const res = await apiClient.post<{ message: string; task_id: string }>(
+    "/api/admin/scraper/refresh-stale",
+    payload
+  );
+  return res.data;
+};
+
+export const retryStore = async (payload: {
+  url: string;
+  niche: string;
+  country: string;
+}): Promise<{ message: string; task_id: string }> => {
+  const res = await apiClient.post<{ message: string; task_id: string }>(
+    "/api/admin/scraper/retry",
+    payload
+  );
   return res.data;
 };

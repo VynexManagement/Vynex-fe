@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Loader2, CheckCircle, XCircle, Search } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { API_URL, fetchSignals } from "@/lib/api";
+import Link from "next/link";
 
 interface LeadRow {
   id: string;
@@ -147,9 +148,9 @@ export default function LeadsPage() {
                     <div className="font-bold text-slate-900 text-xs">
                       {lead.stores?.name || lead.stores?.store_name || "-"}
                     </div>
-                    <div className="text-[10px] text-slate-400 mt-0.5 truncate max-w-[200px]" title={lead.stores?.url}>
+                    <Link href={lead.stores?.url || ""} target="_blank" className="text-[10px] text-blue-400 mt-0.5 truncate max-w-[200px]" title={lead.stores?.url}>
                       {lead.stores?.url}
-                    </div>
+                    </Link>
                   </td>
                   <td className="p-4 text-slate-500 capitalize">
                     <div>{lead.stores?.niche}</div>
